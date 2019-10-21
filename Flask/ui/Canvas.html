@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+
+<body>
+    <!--
+    <div>
+        <h1>Emerging Tech Project</h1>
+        <p>
+            This project uses the MNIST Dataset to identify a hand drawn image of a number between 0 - 9.
+        </p>
+        <hr>
+        <p>
+            Draw a number in the Canvas and hit Button to send for Neural Network Identification
+        </p>
+    </div>
+    <div>
+
+    </div>
+-->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light p-3">
+        <div>
+            <a href="#" class="navbar-brand">
+                MNIST Classifier
+            </a>
+        </div>
+    </nav>
+
+    <div class="card mx-auto mt-3 p-3" style="width: 70%; height: 570px;">
+        <div class="card-body text-center">
+            <h1 class="card-title">Draw a Number between 0 - 9 in the canvas
+            </h1>
+            <hr>
+
+            <div>
+                <canvas id="mnist" width="80%" height="500px" style="border: 5px solid black;"></canvas>
+            </div>
+
+            <hr>
+
+            <div>
+                <button class="btn btn-primary" type="button">
+                    Submit Number
+                </button>
+                <button style="margin-left: 5px;" class="btn btn-danger" type="button" onclick="clearCanvas()">
+                    Clear Canvas
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('mnist');
+        var ctx = canvas.getContext("2d");
+
+        var radius = 10;
+        var mouseDown = false;
+
+        canvas.width = window.innerWidth / 2;
+        canvas.height = window.innerHeight / 2;
+
+        ctx.lineWidth = radius * 2;
+
+        var rect = canvas.getBoundingClientRect();
+
+        var putPoint = (e) => {
+            if (mouseDown) {
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(e.clientX - rect.left, e.clientY - rect.top, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            }
+        };
+
+        var draw = (e) => {
+            mouseDown = true;
+            putPoint(e);
+        };
+
+        var stopDraw = () => {
+            mouseDown = false;
+            ctx.beginPath();
+        };
+
+        canvas.addEventListener('mousedown', draw);
+
+        canvas.addEventListener('mouseup', stopDraw);
+
+        canvas.addEventListener('mousemove', putPoint);
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+        }
+
+
+    </script>
+</body>
+
+</html>
