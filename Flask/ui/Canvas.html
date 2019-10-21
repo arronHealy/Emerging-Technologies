@@ -12,21 +12,6 @@
 
 
 <body>
-    <!--
-    <div>
-        <h1>Emerging Tech Project</h1>
-        <p>
-            This project uses the MNIST Dataset to identify a hand drawn image of a number between 0 - 9.
-        </p>
-        <hr>
-        <p>
-            Draw a number in the Canvas and hit Button to send for Neural Network Identification
-        </p>
-    </div>
-    <div>
-
-    </div>
--->
     <nav class="navbar navbar-expand-lg navbar-light bg-light p-3">
         <div>
             <a href="#" class="navbar-brand">
@@ -35,28 +20,67 @@
         </div>
     </nav>
 
-    <div class="card mx-auto mt-3 p-3" style="width: 70%; height: 570px;">
-        <div class="card-body text-center">
-            <h1 class="card-title">Draw a Number between 0 - 9 in the canvas
-            </h1>
-            <hr>
+    <div class="row">
+        <div class="col-xs-12">
 
-            <div>
-                <canvas id="mnist" width="80%" height="500px" style="border: 5px solid black;"></canvas>
+            <div class="card mx-auto mt-3 p-3" style="height: 570px;">
+                <div class="card-body text-center">
+                    <h1 class="card-title">Draw a Number between 0 - 9 in the canvas
+                    </h1>
+                    <hr>
+
+                    <div>
+                        <canvas id="mnist" width="100px" height="500px" style="border: 5px solid black;"></canvas>
+                    </div>
+
+                    <hr>
+
+                    <div>
+                        <button class="btn btn-primary" type="button" onclick="saveCanvasAsImg()">
+                            Save Canvas
+                        </button>
+                        <button style="margin-left: 5px;" class="btn btn-danger" type="button" onclick="clearCanvas()">
+                            Clear Canvas
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <hr>
+        </div>
 
-            <div>
-                <button class="btn btn-primary" type="button">
-                    Submit Number
-                </button>
-                <button style="margin-left: 5px;" class="btn btn-danger" type="button" onclick="clearCanvas()">
-                    Clear Canvas
-                </button>
+
+        <div class="col-xs-12 mx-auto">
+
+            <div class="card mx-auto mt-3 p-3" style="height: 570px;">
+                <div class="card-body text-center">
+                    <h1 class="card-title">
+                        Your Image
+                    </h1>
+                    <hr>
+
+                    <div>
+                        <img height="300" width="400" id="userImage" alt="Waiting for image to be saved!">
+
+
+                    </div>
+
+                    <hr>
+
+                    <div>
+                        <button class="btn btn-primary" type="button" onclick="classifyImage()">
+                            Classify
+                        </button>
+                        <button style="margin-left: 5px;" class="btn btn-danger" type="button">
+                            Delete Image
+                        </button>
+                    </div>
+                </div>
             </div>
+
         </div>
     </div>
+
+
 
     <script type="text/javascript">
         var canvas = document.getElementById('mnist');
@@ -75,10 +99,12 @@
         var putPoint = (e) => {
             if (mouseDown) {
                 ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+
                 ctx.stroke();
                 ctx.beginPath();
                 ctx.arc(e.clientX - rect.left, e.clientY - rect.top, radius, 0, Math.PI * 2);
                 ctx.fill();
+
                 ctx.beginPath();
                 ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
             }
@@ -103,6 +129,40 @@
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
+        }
+
+        function saveCanvasAsImg() {
+
+            var dataUrl = canvas.toDataURL();
+
+            document.getElementById('userImage').src = dataUrl;
+
+        }
+
+        function classifyImage() {
+            var imageUrl = canvas.toDataURL();
+
+            console.log(imageUrl);
+
+            var imgData = imageUrl.split(',')[1];
+
+            let postObj = {
+                'imageData': imgData
+            };
+
+            console.log(imgData);
+
+            fetch('http://localhost:5000/classify-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postObj)
+            })
+                .then(response => {
+                    console.log(response.json());
+                })
+                .catch(err => {
+                    console.log(err);
+                });
         }
 
 
