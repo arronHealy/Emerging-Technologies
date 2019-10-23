@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
 from PIL import Image
+import matplotlib.pyplot as plt
 
 import tensorflow as tf
 from keras.models import load_model
@@ -53,13 +54,19 @@ def classify():
 
     img = Image.open(io.BytesIO(base64.b64decode(encoded)))
 
-    img = img.resize(img_size, Image.ANTIALIAS)
+    # img = img.convert('1')
 
-    img = img.convert('1')
+    img_array = np.array(img)[:, :, 0]
 
-    img_array = np.asarray(img)
-    img_array = img_array.flatten()
+    img_array = img_array.reshape(28, 28)
+    # img_array = img_array.flatten()
 
+    print('img array shape', img_array.shape)
+
+    return jsonify({'test': 'dummy'})
+
+
+"""
     with graph.as_default():
         out = model.predict(img_array)
         print(out)
@@ -68,7 +75,7 @@ def classify():
             'prediction': np.array_str(np.argmax(out, axis=1))
         }
         return jsonify(response)
-
+"""
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
