@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory
-from PIL import Image
-import matplotlib.pyplot as plt
+
+from scipy.misc import imread, imresize
 
 import tensorflow as tf
 from keras.models import load_model
@@ -16,7 +16,7 @@ global model, graph
 
 
 def get_model():
-    m = load_model('../jupyter/mnist_num_reader.model')
+    m = load_model('../jupyter/mnist_num_reader.h5')
     print('Model loaded')
     return m
 
@@ -24,19 +24,6 @@ def get_model():
 print('Loading model & Graph...')
 model = get_model()
 graph = tf.get_default_graph()
-
-
-"""
-def preprocess_image(imageData):
-    canvasImage = Image.open(io.BytesIO(base64.b64decode(imageData)))
-    canvasImage = canvasImage.resize((28, 28), Image.LANCZOS)
-
-    image = Image.new("L", canvasImage.size, (255))
-    image.paste(canvasImage, canvasImage)
-    image = ImageOps.invert(image)
-
-    return image
-"""
 
 
 @app.route('/')
@@ -50,32 +37,32 @@ def classify():
 
     data = request.get_json()
 
-    encoded = data["imageData"]
+    encoded = data["dataUrl"]
 
-    img = Image.open(io.BytesIO(base64.b64decode(encoded)))
+    with open('output.png', 'wb') as output:
+        output.write(base64.b64decode(encoded))
 
-    # img = img.convert('1')
+    x = imread('output.png', mode='L')
 
-    img_array = np.array(img)[:, :, 0]
+    x = imresize(x, img_size)
 
-    img_array = img_array.reshape(28, 28)
-    # img_array = img_array.flatten()
+    # print(x)
 
-    print('img array shape', img_array.shape)
+    x = np.array(x, dtype=np.float32).reshape(1, 784)
 
-    return jsonify({'test': 'dummy'})
+    x /= 255
 
+    print('x reshape', x.shape)
 
-"""
     with graph.as_default():
-        out = model.predict(img_array)
-        print(out)
-        print(np.argmax(out, axis=1))
-        response = {
-            'prediction': np.array_str(np.argmax(out, axis=1))
-        }
-        return jsonify(response)
-"""
+        predictions = list(model.predict(x))
+
+    print('\nresults: ', str(predictions))
+
+    print('\nprediction is ', np.argmax(predictions))
+
+    return jsonify({'test-size': str(predictions)})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

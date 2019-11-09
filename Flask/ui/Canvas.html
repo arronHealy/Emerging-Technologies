@@ -93,6 +93,8 @@
         canvas.height = window.innerHeight / 2;
 
         ctx.lineWidth = radius * 2;
+        ctx.strokeStyle = "#0000FF";
+        ctx.fillStyle = "#0000FF";
 
         var rect = canvas.getBoundingClientRect();
 
@@ -158,12 +160,10 @@
         function classifyImage() {
             var imageUrl = canvas.toDataURL();
 
-            console.log(imageUrl);
-
             var imgData = imageUrl.split(',')[1];
 
             let postObj = {
-                'imageData': imgData
+                'dataUrl': imgData
             };
 
             fetch('http://localhost:5000/classify-image', {
