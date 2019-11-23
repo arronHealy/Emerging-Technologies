@@ -64,16 +64,18 @@
 
                     </div>
 
+                    <div class="text-center">
+                        <h2 id="target-text" class="card-title"></h2>
+                    </div>
+
                     <hr>
 
-                    <div>
+                    <div class="text-center">
                         <button class="btn btn-primary" type="button" onclick="classifyImage()">
                             Classify
                         </button>
-                        <button style="margin-left: 5px;" class="btn btn-danger" type="button">
-                            Delete Image
-                        </button>
                     </div>
+
                 </div>
             </div>
 
@@ -131,6 +133,9 @@
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
+
+            document.getElementById("target-text").innerHTML = null;
+            document.getElementById('userImage').src = null;
         }
 
         function saveCanvasAsImg() {
@@ -141,22 +146,7 @@
 
         }
 
-        /*
-                function dataURIToBlob(dataURI) {
-                    //var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-        
-                    var arrBuffer = new ArrayBuffer(dataURI.length)
-                    var intArr = new Uint8Array(arrBuffer);
-        
-                    for (var i = 0; i < dataURI.length; i++) {
-                        intArr[i] = dataURI.charCodeAt(i);
-                    }
-        
-                    var blob = new Blob([arrBuffer]);
-        
-                    return blob;
-                }
-        */
+
         function classifyImage() {
             var imageUrl = canvas.toDataURL();
 
@@ -172,7 +162,13 @@
                 body: JSON.stringify(postObj)
             })
                 .then(response => {
-                    console.log(response.json());
+                    //console.log(response.json());
+
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('result: ', result["prediction"]);
+                    document.getElementById("target-text").innerHTML = result["prediction"];
                 })
                 .catch(err => {
                     console.log(err);

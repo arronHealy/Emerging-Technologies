@@ -59,9 +59,11 @@ def classify():
 
     print('\nresults: ', str(predictions))
 
+    print('prediction 0 ', predictions[0])
+
     print('\nprediction is ', np.argmax(predictions))
 
-    return jsonify({'test-size': str(predictions)})
+    return jsonify({'prediction': 'Neural Network predicts: {}'.format(np.argmax(predictions))})
 
 
 if __name__ == '__main__':
