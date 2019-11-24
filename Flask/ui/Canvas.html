@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>MNIST App</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 
+<!-- Markup adapted from use of Bootsrap site https://getbootstrap.com/docs/4.0/layout/overview/ -->
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light p-3">
@@ -85,23 +86,38 @@
 
 
     <script type="text/javascript">
-        var canvas = document.getElementById('mnist');
-        var ctx = canvas.getContext("2d");
 
-        var radius = 10;
-        var mouseDown = false;
+        /*
+            Draw on canvas code adapted from youtube series 
+            https://www.youtube.com/watch?v=m4sioSqlXhQ&list=PLfdtiltiRHWHfOVfqI89Nc3xUMY-q-7f0 
+
+            Also got canvas info from
+            https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API 
+        */
+
+        let canvas = document.getElementById('mnist');
+        let ctx = canvas.getContext("2d");
+
+        let radius = 10;
+        let mouseDown = false;
 
         canvas.width = window.innerWidth / 2;
         canvas.height = window.innerHeight / 2;
 
         ctx.lineWidth = radius * 2;
+
+        // Chose Blue for drawing as black no good on server side when converted to gray scale.
+        // image data be represented as all 0's
         ctx.strokeStyle = "#0000FF";
         ctx.fillStyle = "#0000FF";
 
-        var rect = canvas.getBoundingClientRect();
+        // needed for positions on camvas to match mouse pointer to drawing position
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect
+        let rect = canvas.getBoundingClientRect();
 
-        var putPoint = (e) => {
+        let putPoint = (e) => {
             if (mouseDown) {
+                // fix to mouse pointer position
                 ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
 
                 ctx.stroke();
@@ -114,12 +130,12 @@
             }
         };
 
-        var draw = (e) => {
+        let draw = (e) => {
             mouseDown = true;
             putPoint(e);
         };
 
-        var stopDraw = () => {
+        let stopDraw = () => {
             mouseDown = false;
             ctx.beginPath();
         };
@@ -130,6 +146,8 @@
 
         canvas.addEventListener('mousemove', putPoint);
 
+        // Reset canvas and image values
+
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.beginPath();
@@ -138,32 +156,38 @@
             document.getElementById('userImage').src = null;
         }
 
-        function saveCanvasAsImg() {
+        // convert image data to base 64 string and set image source on web page 
 
-            var dataUrl = canvas.toDataURL();
+        function saveCanvasAsImg() {
+            let dataUrl = canvas.toDataURL();
 
             document.getElementById('userImage').src = dataUrl;
-
         }
 
+        // post image data to flask server
 
         function classifyImage() {
-            var imageUrl = canvas.toDataURL();
+            let imageUrl = canvas.toDataURL();
 
-            var imgData = imageUrl.split(',')[1];
+            // split image string so it's only the base 64 image data
+            let imgData = imageUrl.split(',')[1];
 
+            //send as object
             let postObj = {
                 'dataUrl': imgData
             };
 
+            // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+            // Built in web HTTP Client
+            // post image data to server on port 5000  
             fetch('http://localhost:5000/classify-image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(postObj)
             })
                 .then(response => {
-                    //console.log(response.json());
-
+                    // handling json data async response
+                    // https://www.taniarascia.com/how-to-use-the-javascript-fetch-api-to-get-json-data/
                     return response.json();
                 })
                 .then(result => {
