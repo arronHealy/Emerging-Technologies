@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 
-from scipy.misc import imread, imresize
+# from imageio import imread, imresize
+from PIL import Image
 
 import tensorflow as tf
 from keras.models import load_model
@@ -60,27 +61,30 @@ def classify():
         output.write(base64.b64decode(encoded))
 
     # read saved image in as grayscale
-    x = imread('output.png', mode='L')
+    # x = imread('output.png', mode='L')
+    x = Image.open('output.png').convert('L')
 
     # resize image to mnist size
-    x = imresize(x, img_size)
+    x = x.resize(img_size, Image.ANTIALIAS)
 
     # convert and scale image data as in model preperation
     x = np.array(x, dtype=np.float32).reshape(1, 784)
 
     x /= 255
 
-    print('x reshape', x.shape)
+    print('x shape', x.shape)
 
-    # predict using temsorflow default graph
+    # model.predict() wont't work on it's own
+    # had to use the following
+    # predict using tensorflow default graph
     # https://stackoverflow.com/questions/56376943/running-keras-predictions-with-flask-gives-error
 
     with graph.as_default():
         predictions = list(model.predict(x))
 
-    # print('\nresults: ', str(predictions))
+    print('\nresults: ', str(predictions))
 
-    # print('prediction 0 ', predictions[0])
+    print('prediction 0 ', predictions[0])
 
     print('prediction is ', np.argmax(predictions))
 
