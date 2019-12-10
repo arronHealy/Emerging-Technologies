@@ -5,6 +5,7 @@ from PIL import Image
 
 import tensorflow as tf
 from keras.models import load_model
+from keras import backend as K
 
 import keras as kr
 import numpy as np
@@ -16,15 +17,19 @@ app = Flask(__name__)
 global model, graph
 
 
-def get_model():
-    m = load_model('../jupyter/mnist_num_reader.h5')
+def get_model(model):
+    if model == 'sequential':
+        m = load_model('../jupyter/mnist_num_reader.h5')
+    else:
+        m = load_model('../jupyter/mnist_conv2d.h5')
+
     print('Model loaded')
     return m
 
 
-print('Loading model & Graph...')
-model = get_model()
-graph = tf.get_default_graph()
+# print('Loading model & Graph...')
+# model = get_model()
+# graph = tf.get_default_graph()
 
 
 # Send Web page when base route is reached
@@ -67,30 +72,43 @@ def classify():
     # resize image to mnist size
     x = x.resize(img_size, Image.ANTIALIAS)
 
-    # convert and scale image data as in model preperation
-    x = np.array(x, dtype=np.float32).reshape(1, 784)
+    # load model based upon model specified
+    # model being loaded in same thread as prediction fixs issue described below
+    model = get_model(data["model"])
 
-    x /= 255
+    # reshape depending on model specified
+    # convert and scale image data as in model preperation
+    if data["model"] == 'sequential':
+        x = np.array(x, dtype=np.float32).reshape(1, 784) / 255
+    else:
+        x = np.array(x, dtype=np.float32).reshape(1, 28, 28, 1) / 255
 
     print('x shape', x.shape)
 
     # model.predict() wont't work on it's own
     # had to use the following
     # predict using tensorflow default graph
-    # https://stackoverflow.com/questions/56376943/running-keras-predictions-with-flask-gives-error
+    # https://stackoverflow.com/questions/53874115/keras-model-working-fine-locally-but-wont-work-on-flask-api
 
-    with graph.as_default():
-        predictions = list(model.predict(x))
+    # with graph.as_default():
 
-    print('\nresults: ', str(predictions))
+    # figured out the issue since model was being loaded on separate thread it wouldn't work
+    # but now model being loaded in same thread so predict works fine
+    predictions = list(model.predict(x))
 
-    print('prediction 0 ', predictions[0])
+    # print('\nresults: ', str(predictions))
+
+    # print('prediction 0 ', predictions[0])
 
     print('prediction is ', np.argmax(predictions))
 
     prediction = {
         'prediction': 'Neural Network predicts: {}'.format(np.argmax(predictions))
     }
+
+    # clear backend session so not to cause crash if different model specified
+    # https://stackoverflow.com/questions/51588186/keras-tensorflow-typeerror-cannot-interpret-feed-dict-key-as-tensor
+    K.clear_session()
 
     return jsonify(prediction)
 

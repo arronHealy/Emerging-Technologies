@@ -31,7 +31,7 @@
                     <hr>
 
                     <div>
-                        <canvas id="mnist" width="100px" height="500px" style="border: 5px solid black;"></canvas>
+                        <canvas id="mnist" width="200px" height="600px" style="border: 5px solid black;"></canvas>
                     </div>
 
                     <hr>
@@ -54,9 +54,16 @@
 
             <div class="card mx-auto mt-3 p-3" style="height: 570px;">
                 <div class="card-body text-center">
-                    <h1 class="card-title">
-                        Your Image
-                    </h1>
+
+                    <h2 class="card-title">Select a Model</h2>
+
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="customSwitch1"
+                            onclick="switchModelState()">
+                        <label class="custom-control-label" for="customSwitch1" id="modelText">Sequential
+                            Model</label>
+                    </div>
+
                     <hr>
 
                     <div>
@@ -72,9 +79,11 @@
                     <hr>
 
                     <div class="text-center">
+
                         <button class="btn btn-primary" type="button" onclick="classifyImage()">
                             Classify
                         </button>
+
                     </div>
 
                 </div>
@@ -146,6 +155,16 @@
 
         canvas.addEventListener('mousemove', putPoint);
 
+        // check for checkbox state and update page text
+
+        function switchModelState() {
+            if (document.getElementById('customSwitch1').checked) {
+                document.getElementById('modelText').innerHTML = '2D Convolutional Model';
+            } else {
+                document.getElementById('modelText').innerHTML = 'Sequential Model';
+            }
+        }
+
         // Reset canvas and image values
 
         function clearCanvas() {
@@ -172,8 +191,17 @@
             // split image string so it's only the base 64 image data
             let imgData = imageUrl.split(',')[1];
 
+            let modelSwitch = document.getElementById('customSwitch1').checked;
+
+            let modelType = 'sequential';
+
+            if (modelSwitch) {
+                modelType = 'conv2D';
+            }
+
             //send as object
             let postObj = {
+                'model': modelType,
                 'dataUrl': imgData
             };
 
